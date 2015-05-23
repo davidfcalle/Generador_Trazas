@@ -27,6 +27,12 @@ struct Lista
 {
 	struct Nodo *cabeza;
 };
+struct Maquina
+{
+	Lista *lista;
+	int idMaquina;
+	
+};
 
 struct Nodo* crearNodo(struct Log log){
 	struct Nodo* nuevo = malloc(sizeof(struct Nodo));
@@ -85,11 +91,22 @@ void iniciar_computador(int tipo, int idMaquina){
 		printf("LISTA!!! %i %i\n",getpid(),aux->log.idMaquina );
 		aux=aux->siguiente;
 	}
+	eliminarLista(lista);
+
+}
+
+void cargarUsuarios(int *usuarios, int cantidad){
+	int i, temporal;
+	for (i = 0; i < cantidad; ++i){
+	 	printf("Diga el tipo de usuario del computador %i\n",(i+1) );
+	 	scanf("%i", &temporal);
+	 	usuarios[i]=temporal;
+	}
 
 }
 
 int main(int argc, char *argv[]){
-	int *pid,cantidad_computadores,i, status, blogs, runtime, tipo;
+	int *pid,cantidad_computadores,i, status, blogs, runtime, tipo, *tipos_blogs;
 
 	
 	if(argc!=4){
@@ -101,27 +118,21 @@ int main(int argc, char *argv[]){
 	cantidad_computadores=atoi(argv[1]);
 	runtime=atoi(argv[2]);
 	blogs=atoi(argv[3]);
-	//cargarUsuarios();
 	pid = malloc(sizeof(int )* cantidad_computadores);
-	for (i = 0; i < cantidad_computadores; ++i)
-	{
-		if((pid[i]=fork())==0){
-			
-				
-		iniciar_computador(1,i);
+	tipos_blogs= malloc(sizeof(int )* cantidad_computadores);
+	cargarUsuarios(tipos_blogs, cantidad_computadores);
+
+	for (i = 0; i < cantidad_computadores; ++i){
+		if((pid[i]=fork())==0){	
+			iniciar_computador(tipos_blogs[i],i);
 			exit(0);
-		}
-		
+		}	
 	}
-	for (i = 0; i < cantidad_computadores; ++i)
-	{	
+	for (i = 0; i < cantidad_computadores; ++i){	
 		wait(&status);
 	}
-	
-	printf("Soy el padre y termino\n");
-	 
-	free(pid);
-		
+	free(pid);	
+	free(tipos_blogs);
 }
 	
 /* segundo actual 
