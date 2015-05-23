@@ -1,9 +1,15 @@
+//gcc main.c -lpthread -o p
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <signal.h>
+#include <semaphore.h>
+typedef void (*sighandler_t)(int);
+sem_t escritura;
 struct Usuario
 {
 	int id;
@@ -23,23 +29,29 @@ struct Nodo
 	struct Log log;
 	struct Nodo *siguiente;
 };
-struct Lista
+typedef struct 
 {
 	struct Nodo *cabeza;
-};
+}Lista;
 
 struct Nodo* crearNodo(struct Log log){
 	struct Nodo* nuevo = malloc(sizeof(struct Nodo));
 	nuevo->log=log;
 	return nuevo;
 }
-struct Lista* crearLista(){
-	struct Lista *lista= malloc(sizeof(struct Lista));
+Lista* crearLista(){
+	Lista *lista= malloc(sizeof(Lista));
 	lista->cabeza=NULL;
 	return lista;
 }
-
-void agregarALista(struct Lista* lista, struct Nodo* nodo){
+typedef struct {
+	int tipo;
+	int num_blogs;
+	int cant_seciones;
+	int id_maquina;
+	Lista*  logs;
+} Parametros;
+void agregarALista(Lista* lista, struct Nodo* nodo){
 	struct Nodo* aux=lista->cabeza;
 	if(aux==NULL){
 		lista->cabeza=nodo;
@@ -51,7 +63,15 @@ void agregarALista(struct Lista* lista, struct Nodo* nodo){
 	}
 
 }
-void eliminarLista(struct Lista *lista){
+void imprimir(Lista* lista){
+	struct Nodo* aux=lista->cabeza;
+	while(aux!=NULL){
+		printf("Id maquina: %i", aux->log.idMaquina);
+		aux= aux->siguiente;
+	}
+
+}
+void eliminarLista(Lista *lista){
 	struct Nodo* aux= lista->cabeza;
 	while(aux!=NULL){
 		struct Nodo* actual=aux;
@@ -61,14 +81,62 @@ void eliminarLista(struct Lista *lista){
 	free(lista);
 }
 
-void iniciar_computador(int tipo, int idMaquina){
-	printf(" soy un PC de tipo %i\n",tipo);
-	pthread_t hilo;
-	struct Lista* lista = crearLista();
-	// alarma para el tiempo del usuario, simular usuario y pasarlo como  parametro, mientras no haya pasada el runtime
-	//recopilar datos y guardar en archivo
-	eliminarLista(lista);
+void* accion_hilo (Parametros *p){
+	int num_secion, Bactual;
+	num_secion = (*p).cant_seciones;
+	Bactual = rand() % (*p).num_blogs;
 
+//funcion genrar log
+	struct Log log;
+	log.idMaquina = p->id_maquina;
+	log.tipoUsuario = 1;
+	meter_log(p->logs, log);
+	printf("Simular usuario\n");
+	pthread_exit(NULL);
+}
+void meter_log (Lista * lista, struct Log log){
+	struct Nodo * nodo =  crearNodo(log);	
+	sem_wait(&escritura);
+	agregarALista(lista, nodo);
+	sem_post(&escritura);
+}
+
+sighandler_t signalHandler (void)
+{
+	
+}
+int iniciar_computador(int tipo_usuario, int id_maquina)
+{	
+	int cant_seciones;
+	int num_blogs;
+	Lista * lista;
+	//crear lista
+	
+	cant_seciones = 0;	
+	sem_init(&escritura, 0, 1);
+
+	pthread_t id;
+    	int index;
+	int tiempo=1;
+	signal (SIGALRM, (sighandler_t)signalHandler);
+	int cont =0;
+	while (cont<10){
+		Parametros p;
+		p.tipo = tipo_usuario;
+		p.num_blogs = num_blogs;
+		p.cant_seciones = cant_seciones;
+		p.logs = lista;
+		p.id_maquina= id_maquina;
+		alarm (tiempo);
+		pause ();
+		pthread_create(&id, NULL,(void *) accion_hilo, (void*)&p);
+		cant_seciones++;
+		cont++;	
+	} 
+	//buscar como espearar todos los hilos
+	   
+   
+    
 }
 
 void cargarUsuarios(int *usuarios, int cantidad){
@@ -99,7 +167,8 @@ int main(int argc, char *argv[]){
 	cargarUsuarios(tipos_blogs, cantidad_computadores);
 
 	for (i = 0; i < cantidad_computadores; ++i){
-		if((pid[i]=fork()) == 0){	
+		if((pid[i]=fork()) == 0){
+			printf("se creo un computador\n");	
 			iniciar_computador(tipos_blogs[i],i);
 			exit(0);
 		}	
