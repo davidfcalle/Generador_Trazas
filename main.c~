@@ -60,6 +60,13 @@ void eliminarLista(struct Lista *lista){
 	}
 	free(lista);
 }
+/*
+* ¿cómo ingresa el tipo de usuario de cada máquina?
+* ¿Bloggers?
+* se puede ahacer con archivos con nombre pid?
+* toca implementar Lista?
+* que pasaW con las sesiones y máquinas?
+*/
 
 void iniciar_computador(int tipo, int idMaquina){
 	printf(" soy un PC de tipo %i\n",tipo);
