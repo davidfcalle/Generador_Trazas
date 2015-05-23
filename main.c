@@ -27,12 +27,6 @@ struct Lista
 {
 	struct Nodo *cabeza;
 };
-struct Maquina
-{
-	Lista *lista;
-	int idMaquina;
-	
-};
 
 struct Nodo* crearNodo(struct Log log){
 	struct Nodo* nuevo = malloc(sizeof(struct Nodo));
@@ -78,19 +72,8 @@ void iniciar_computador(int tipo, int idMaquina){
 	printf(" soy un PC de tipo %i\n",tipo);
 	pthread_t hilo;
 	struct Lista* lista = crearLista();
-	struct Log log,log2;
-	log.idMaquina=1;
-	log2.idMaquina=2;
-	struct Nodo *nodo1,*nodo2;
-	nodo1= crearNodo(log);
-	nodo2= crearNodo(log2);
-	agregarALista(lista, nodo1);
-	agregarALista(lista, nodo2);
-	struct Nodo* aux= lista->cabeza;
-	while(aux!=NULL){
-		printf("LISTA!!! %i %i\n",getpid(),aux->log.idMaquina );
-		aux=aux->siguiente;
-	}
+	// alarma para el tiempo del usuario, simular usuario y pasarlo como  parametro, mientras no haya pasada el runtime
+	//recopilar datos y guardar en archivo
 	eliminarLista(lista);
 
 }
@@ -115,15 +98,15 @@ int main(int argc, char *argv[]){
 	}
 
 	
-	cantidad_computadores=atoi(argv[1]);
-	runtime=atoi(argv[2]);
-	blogs=atoi(argv[3]);
-	pid = malloc(sizeof(int )* cantidad_computadores);
-	tipos_blogs= malloc(sizeof(int )* cantidad_computadores);
+	cantidad_computadores = atoi(argv[1]);
+	runtime = atoi(argv[2]);
+	blogs = atoi(argv[3]);
+	pid = malloc(sizeof(int) * cantidad_computadores);
+	tipos_blogs = malloc(sizeof(int) * cantidad_computadores);
 	cargarUsuarios(tipos_blogs, cantidad_computadores);
 
 	for (i = 0; i < cantidad_computadores; ++i){
-		if((pid[i]=fork())==0){	
+		if((pid[i]=fork()) == 0){	
 			iniciar_computador(tipos_blogs[i],i);
 			exit(0);
 		}	
@@ -131,6 +114,7 @@ int main(int argc, char *argv[]){
 	for (i = 0; i < cantidad_computadores; ++i){	
 		wait(&status);
 	}
+	//recopilar datos y guardar en un archivo
 	free(pid);	
 	free(tipos_blogs);
 }
