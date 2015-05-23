@@ -1,104 +1,223 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/time.h>
-#include <pthread.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <vector>
-#include <iostream>
-using namespace std;
-struct Log
-{
-	tm hora;
-	int idMaquina;
-	int tipoUsuario;
-	int idSesion;
-	char accion[50];
-};
-struct Usuario
-{
-	int id;
-	double grafo[3][3];
-	int tiempo_sesion;
-	std::vector<Log> traza;
 
-};
+#include <iostream>
+
+using namespace std;
+
 
 /*
-* ¿cómo ingresa el tipo de usuario de cada máquina?
-* ¿Bloggers?
-* se puede ahacer con archivos con nombre pid?
-* toca implementar Lista?
-* que fuck con las sesiones y máquinas?
+	Función que me imprime el menú y me retorna la sección del usuario
 */
 
-void iniciar_computador(int tipo, int idMaquina){
-	printf(" soy un PC de tipo %i\n",tipo );
-	pthread_t hilo;
-	Usuario usuario;
-	std::vector<int> v;
-	v.push_back(1);
-	v.push_back(1);
-	v.push_back(3);
-	for (int i = 0; i < v.size(); ++i)
-	{
-		cout<<"con cout "<<getpid()<<" "<<v[i]<<endl;
-	}
-	//creo los hilos y los pongo andar
-	//simular
+struct Cancion
+{
+	string titulo;
+	string autor;
+	float duracion;
+	int reproducciones;
+
+};
+
+struct listaDeReproduccion
+{
+	string nombre;
+	int cantidadDePistas;
+	int cantidadPistasAgregadas;
+	int actual;
+	Cancion canciones[200];
+
+};
+
+struct Genero
+{
+	string nombre;
+	Cancion canciones[15];
+	int cantidadCanciones;
+};
+
+struct Biblioteca
+{
+	Cancion canciones [300];
+	int cantidadCanciones;
+	listaDeReproduccion cancionesLista [100];
+	int cantidadListas;
+	Genero generos [100];
+	int cantidadGeneros;
+	int posicionListaActual;
+
+
+};
+
+Cancion crearCancion(string titulo,string autor, float duracion){
+	Cancion cancion;
+	cancion.titulo=titulo;
+	cancion.autor=autor;
+	cancion.duracion=duracion;
+	cancion.reproducciones=0;
+	return cancion;
+}
+
+Biblioteca agregarCancion(Biblioteca biblioteca,Cancion cancion){
+	biblioteca.canciones[biblioteca.cantidadCanciones] = cancion;
+	biblioteca.cantidadCanciones=biblioteca.cantidadCanciones+1;
+	return biblioteca;
+}
+
+Biblioteca llenar(){
+    Biblioteca biblioteca;
+    Cancion c1= crearCancion("Kevin", "Kevil Roldán",30);
+    biblioteca=agregarCancion(biblioteca, c1);
+    return biblioteca;
 
 }
 
-int main(int argc, char *argv[]){
-	int *pid,cantidad_computadores,i, status, blogs, runtime, tipo;
 
-	
-	if(argc!=4){
-		printf("cantidad de argumentos, no válida, debería ser  numeroDeComputadores, numeroBlogs, runtime\n");
-		exit(0);
-	}
 
-	
-	cantidad_computadores=atoi(argv[1]);
-	runtime=atoi(argv[2]);
-	blogs=atoi(argv[3]);
-	//cargarUsuarios();
-	pid = new int[cantidad_computadores];
-	for (i = 0; i < cantidad_computadores; ++i)
+int existeCancion(Biblioteca biblioteca,string nombre){
+
+	for (int i = 0; i < biblioteca.cantidadCanciones; ++i)
 	{
-		if((pid[i]=fork())==0){
-			
-				
-		iniciar_computador(1,i);
-		exit(0);
+		if (biblioteca.canciones[i].titulo==nombre){
+			return i;
+		}		
+	}
+	return -1;
+}
+
+
+
+Genero agregarCancionAGenero(Genero lista, Cancion cancion){
+// no importa por ahora
+}
+
+listaDeReproduccion agregarCancionALista(Cancion cancion, listaDeReproduccion lista){
+    int ultima=lista.cantidadPistasAgregadas;
+    lista.canciones[ultima] = cancion;
+    lista.cantidadPistasAgregadas= lista.cantidadPistasAgregadas+1;
+    lista.cantidadDePistas= lista.cantidadDePistas+1;
+    return lista;
+
+}
+Cancion crearCancionUsuario(){
+    string nombre;
+    string autor;
+    float duracion;
+    cout<<"creacion de cancion"<<endl;
+    cout<<"Ingrese el nombre"<<endl;
+    cin>>nombre;
+    cout<<"Ingrese el autor"<<endl;
+    cin>>autor;
+    cout<<"Ingrese el duracion"<<endl;
+    cin>>duracion;
+    Cancion c;
+    c= crearCancion(nombre, autor, duracion);
+    c.reproducciones=0;
+    return c;
+}
+
+listaDeReproduccion crearListaDeReproduccion(string nombre, Biblioteca biblioteca){
+	listaDeReproduccion listica;
+	listica.nombre= nombre;
+	listica.cantidadDePistas=0;
+	listica.cantidadPistasAgregadas=0;
+	int seleccion;
+	do{
+        cout<<"¿Desea agregar una cancion a esta lista de reproduccion? 1. Si 2. No"<<endl;
+        cin>>seleccion;
+        if(seleccion!=2){
+        	cout<<"Ingrese el nombre de la canción"<<endl;
+        	string nombreC;
+        	cin>>nombreC;
+        	int posicionCancion=existeCancion(biblioteca, nombreC);
+        	if (posicionCancion!=-1)
+        	{
+        		listica= agregarCancionALista(biblioteca.canciones[posicionCancion], listica);
+        	}
+            //Cancion cancion=crearCancionUsuario();// buscar canciòn
+            //listica=agregarCancionALista(cancion,listica);
+
+        }
+	}while(seleccion!=2);
+
+	return listica;
+
+}
+
+
+void reproducirCanciones(listaDeReproduccion lista){
+
+}
+
+
+
+char menu(){
+	cout<<"Seleccione una opción"<<endl;
+	cout<<"1. Seleccinoar una pista y agregarla a la cola de reproducción"<<endl;
+	cout<<"2. Crear Lista de Reproduccion "<<endl;
+	cout<<"3. Seleccionar Lista de Reproducción "<<endl;
+	cout<<"4. Terminar Pista"<<endl;
+	cout<<"5. Agregar canciones a Género"<<endl;
+	cout<<"6. Top 10"<<endl;
+	cout<<"7. Generos más escuchados"<<endl;
+	cout<<"8. Buscar Pista por género"<<endl;
+
+
+
+	cout<<"Seleccione una opción"<<endl;
+	cout<<"Seleccione una opción"<<endl;
+	char seleccion;
+	cin>>seleccion;
+	return seleccion;
+}
+
+bool esPrimo(int numero){
+    for (int i = 2; i < numero; ++i)
+    {
+    	if(numero%i==0){
+    		return false;
+    	}
+    }
+    return true;
+}
+
+
+int main()
+{
+    Biblioteca biblioteca;
+	biblioteca.cantidadCanciones = 0;
+	biblioteca.cantidadListas = 0;
+	biblioteca.cantidadGeneros = 0;
+	biblioteca.posicionListaActual = -1;
+
+
+	char seleccion= menu();
+	while(seleccion!='s'){
+
+		switch(seleccion){
+			case '1':{
+                cout<<"Llamo a agregarCancion"<<endl;
+                break;
+			}
+            case '2':{
+			    cout<<"ingrese el nombre de la lista"<<endl;
+			    string nombre1;
+			    cin>>nombre1;
+                listaDeReproduccion milista=crearListaDeReproduccion(nombre1);
+
+            break;
+			 }
+			case 'a':
+				Cancion c= crearCancionUsuario();
+				biblioteca=agregarCancion(biblioteca,c);
+				cout<<"lo guarda"<<endl;
+				cout<<"Ahora la bilbil tiene "<<biblioteca.cantidadCanciones<<endl;
+			break;
+
+
+
+
 		}
-		
-	}
-	for (i = 0; i < cantidad_computadores; ++i)
-	{	
-		wait(NULL);
-	}
-	
-	printf("Soy el padre y termino\n");
-	 
-	free(pid);
-		
-}
-	
-/* segundo actual 
-	struct timeval start,end;
-	gettimeofday(&end, NULL);
-	gettimeofday(&start, NULL);
-		printf("%ld\n", ((end.tv_sec * 1000000 + end.tv_usec)
-		  - (start.tv_sec * 1000000 + start.tv_usec))); 
-	*/
-	
-	/* Tiempo
-	time_t t = time(NULL);
-	struct tm tm = *localtime(&t);
+		seleccion= menu();
 
-	printf("now: %d-%d-%d %d:%d:%d\n", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
-	*/
+	}
+	return 0;
+}
