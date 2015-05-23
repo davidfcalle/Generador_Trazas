@@ -52,21 +52,25 @@ typedef struct {
 	Lista*  logs;
 } Parametros;
 void agregarALista(Lista* lista, struct Nodo* nodo){
+	
 	struct Nodo* aux=lista->cabeza;
 	if(aux==NULL){
+	
 		lista->cabeza=nodo;
 	}else{
+	
 		while(aux->siguiente!=NULL){
 			aux= aux->siguiente;
 		}
 		aux->siguiente=nodo;
+		
 	}
 
 }
 void imprimir(Lista* lista){
 	struct Nodo* aux=lista->cabeza;
 	while(aux!=NULL){
-		printf("Id maquina: %i", aux->log.idMaquina);
+		printf("Id maquina: %i \n", aux->log.idMaquina);
 		aux= aux->siguiente;
 	}
 
@@ -80,6 +84,12 @@ void eliminarLista(Lista *lista){
 	}
 	free(lista);
 }
+void meter_log (Lista * lista, struct Log log){
+	struct Nodo * nodo =  crearNodo(log);	
+	sem_wait(&escritura);
+	agregarALista(lista, nodo);
+	sem_post(&escritura);
+}
 
 void* accion_hilo (Parametros *p){
 	int num_secion, Bactual;
@@ -87,19 +97,15 @@ void* accion_hilo (Parametros *p){
 	Bactual = rand() % (*p).num_blogs;
 
 //funcion genrar log
+		
 	struct Log log;
 	log.idMaquina = p->id_maquina;
 	log.tipoUsuario = 1;
+	
 	meter_log(p->logs, log);
-	printf("Simular usuario\n");
-	pthread_exit(NULL);
+	//pthread_exit(NULL);
 }
-void meter_log (Lista * lista, struct Log log){
-	struct Nodo * nodo =  crearNodo(log);	
-	sem_wait(&escritura);
-	agregarALista(lista, nodo);
-	sem_post(&escritura);
-}
+
 
 sighandler_t signalHandler (void)
 {
@@ -109,18 +115,19 @@ int iniciar_computador(int tipo_usuario, int id_maquina)
 {	
 	int cant_seciones;
 	int num_blogs;
-	Lista * lista;
-	//crear lista
+	Lista * lista= crearLista();
 	
 	cant_seciones = 0;	
 	sem_init(&escritura, 0, 1);
 
 	pthread_t id;
-    	int index;
+    int index;
 	int tiempo=1;
 	signal (SIGALRM, (sighandler_t)signalHandler);
 	int cont =0;
-	while (cont<10){
+
+	while (cont<5){
+		printf("va a entrar\n");
 		Parametros p;
 		p.tipo = tipo_usuario;
 		p.num_blogs = num_blogs;
@@ -130,11 +137,14 @@ int iniciar_computador(int tipo_usuario, int id_maquina)
 		alarm (tiempo);
 		pause ();
 		pthread_create(&id, NULL,(void *) accion_hilo, (void*)&p);
+		 	
 		cant_seciones++;
 		cont++;	
 	} 
+	printf("Fin computador\n");
+	imprimir(lista);
 	//buscar como espearar todos los hilos
-	   
+	// escribir con nombre pid 
    
     
 }
