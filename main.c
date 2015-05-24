@@ -8,6 +8,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include <semaphore.h>
+#include <math.h>
 typedef void (*sighandler_t)(int);
 sem_t escritura;
 struct Usuario
@@ -65,6 +66,39 @@ void agregarALista(Lista* lista, struct Nodo* nodo){
 		aux->siguiente=nodo;
 		
 	}
+}
+char *itoa(int i)
+{
+  static char buffer[12];
+  if (snprintf(buffer, sizeof(buffer), "%d", i) < 0)
+    return NULL;
+  return strdup(buffer);
+}
+void imprimirListaArchivo(Lista* lista){
+	int pid;
+	char* nombreArchivo;
+	pid=getpid();
+	nombreArchivo= itoa(pid);
+	FILE *f = fopen(nombreArchivo, "w");
+ 	if (f == NULL){
+    	printf("Error al abrir el archivo \n");
+    	// No se si matar todo en caso de que falle o igual seguir
+    	exit(1);
+	}else{
+		// recorro la lista e imprimo los datos uno a uno
+		struct Nodo* aux=lista->cabeza;
+		while(aux!=NULL){
+			struct Log log= aux->log;
+			struct tm tm = log.hora;
+			//impresión de la hora
+			fprintf(f,"%d-%d-%d %d:%d:%d ", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+			//idMaquina , numeroDeSesion, Tipo de Lector, operacion
+			fprintf(f, "%i %i %i %s\n", log.idMaquina, log.idSesion, log.tipoUsuario, log.accion);
+			aux= aux->siguiente;
+		}
+	}
+	fclose(f);
+	free(nombreArchivo);
 
 }
 void imprimir(Lista* lista){
@@ -95,13 +129,10 @@ void* accion_hilo (Parametros *p){
 	int num_secion, Bactual;
 	num_secion = (*p).cant_seciones;
 	Bactual = rand() % (*p).num_blogs;
-
-//funcion genrar log
-		
+	//funcion genrar log	
 	struct Log log;
 	log.idMaquina = p->id_maquina;
 	log.tipoUsuario = 1;
-	
 	meter_log(p->logs, log);
 	//pthread_exit(NULL);
 }
@@ -125,9 +156,8 @@ int iniciar_computador(int tipo_usuario, int id_maquina)
 	int tiempo=1;
 	signal (SIGALRM, (sighandler_t)signalHandler);
 	int cont =0;
-
+	//Este contador se puede calucular dividiendo el tiempo maximo con el tiempo entre sesiones
 	while (cont<5){
-		printf("va a entrar\n");
 		Parametros p;
 		p.tipo = tipo_usuario;
 		p.num_blogs = num_blogs;
@@ -142,7 +172,7 @@ int iniciar_computador(int tipo_usuario, int id_maquina)
 		cont++;	
 	} 
 	printf("Fin computador\n");
-	imprimir(lista);
+	imprimirListaArchivo(lista);
 	//buscar como espearar todos los hilos
 	// escribir con nombre pid 
    
