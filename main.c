@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <semaphore.h>
 #include <math.h>
+#include <unistd.h>
 typedef void (*sighandler_t)(int);
 sem_t escritura;
 struct Usuario
@@ -152,7 +153,7 @@ int iniciar_computador(int tipo_usuario, int id_maquina)
 	sem_init(&escritura, 0, 1);
 
 	pthread_t id;
-    int index;
+    	int index;
 	int tiempo=1;
 	signal (SIGALRM, (sighandler_t)signalHandler);
 	int cont =0;
@@ -173,6 +174,7 @@ int iniciar_computador(int tipo_usuario, int id_maquina)
 	} 
 	printf("Fin computador\n");
 	imprimirListaArchivo(lista);
+	
 	//buscar como espearar todos los hilos
 	// escribir con nombre pid 
    
@@ -189,6 +191,39 @@ void cargarUsuarios(int *usuarios, int cantidad){
 
 }
 
+void recopilarLogs(int *pid, int cantidad_computadores){
+	int i;	
+	FILE *fr, *salida;
+	char  *nombreArchivo, linea[256];
+	salida = fopen ("Analisis.log", "w");
+	if (salida == NULL){
+    		printf("Error al abrir el archivo \n");
+    		exit(1);
+	}
+	printf("*************** Log Completo ******************");
+	for(i=0; i< cantidad_computadores;i++){
+		nombreArchivo= itoa(pid[i]);
+		fr = fopen (nombreArchivo, "r");
+		if( fr == NULL ){
+      			perror("Error al abrir el archivo \n");
+      			exit(EXIT_FAILURE);
+   		}
+		
+		
+		
+    		while (fgets(linea, sizeof(linea), fr)) {
+			fprintf(salida,"%s", linea);        		
+			printf("%s", linea); 
+    		}
+	
+		fclose(fr);
+		//falta validar status
+		remove(nombreArchivo);
+		free(nombreArchivo);
+		 
+	}
+	fclose(salida);
+}
 int main(int argc, char *argv[]){
 	int *pid,cantidad_computadores,i, status, blogs, runtime, tipo, *tipos_blogs;
 
@@ -217,6 +252,7 @@ int main(int argc, char *argv[]){
 		wait(&status);
 	}
 	//recopilar datos y guardar en un archivo
+	recopilarLogs(pid,cantidad_computadores);
 	free(pid);	
 	free(tipos_blogs);
 }
