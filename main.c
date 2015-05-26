@@ -138,9 +138,18 @@ void imprimirListaArchivo(Lista* lista){
 			struct Log log= aux->log;
 			struct tm tm = log.hora;
 			//impresión de la hora
-			fprintf(f,"%d-%d-%d %d:%d:%d ", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+
+			if(log.blog!=-1){
+				fprintf(f,"%d:%d:%d ",   tm.tm_hour, tm.tm_min, tm.tm_sec);
 			//idMaquina , numeroDeSesion, Tipo de Lector, operacion
-			fprintf(f, "%i %i %i %s %i\n", log.idMaquina, log.idSesion, log.tipoUsuario, log.accion, log.blog);
+				fprintf(f, "M%i, %i, T%i %s %i\n", log.idMaquina, log.idSesion, log.tipoUsuario, log.accion, log.blog);
+			}else{
+				fprintf(f,"%d-%d-%d %d:%d:%d ", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
+			//idMaquina , numeroDeSesion, Tipo de Lector, operacion
+				fprintf(f, "M%i, %i, T%i, %s \n", log.idMaquina, log.idSesion, log.tipoUsuario, log.accion);
+			
+			}
+			
 			aux= aux->siguiente;
 		}
 	}
@@ -194,7 +203,7 @@ void* accion_hilo (Parametros *p){
 		switch (estado){
 			case 0:
 				strcpy(log.accion, "Read blog");
-				break;
+				break;		
 			case 1:
 				strcpy(log.accion, "Read same  blog");
 				break;
@@ -231,22 +240,16 @@ void* accion_hilo (Parametros *p){
 	meter_log(p->logs, log);
 }
 
-sighandler_t signalHandler1 (void)
-{
+sighandler_t signalHandler1 (void){
 	*terminar=1;
 	sem_wait(&escritura);
-	
-	
-	
 }
-sighandler_t signalHandler (void)
-{	
+sighandler_t signalHandler (void){	
 	*terminar = 1;
 }
 
 
-int iniciar_computador(Usuario tipo_usuario, int id_maquina, int cant_seciones, Lista * lista)
-{	
+int iniciar_computador(Usuario tipo_usuario, int id_maquina, int cant_seciones, Lista * lista){	
 	pthread_t id;
 	Parametros p;
 	int tiempo = tipo_usuario.tiempo_sesion;
@@ -256,8 +259,9 @@ int iniciar_computador(Usuario tipo_usuario, int id_maquina, int cant_seciones, 
 	p.cant_seciones = cant_seciones;
 	p.logs = lista;
 	p.id_maquina= id_maquina;
-	sleep (tiempo);
 	pthread_create(&id, NULL,(void *) accion_hilo, (void*)&p);
+	sleep (tiempo);
+	
 	 	
 	cant_seciones++;
    
@@ -267,8 +271,13 @@ int iniciar_computador(Usuario tipo_usuario, int id_maquina, int cant_seciones, 
 void cargarUsuarios(int *usuarios, int cantidad){
 	int i, temporal;
 	for (i = 0; i < cantidad; ++i){
-	 	printf("Diga el tipo de usuario del computador %i\n",(i+1) );
+	 	printf("Diga el tipo de usuario del computador (1,2,3) %i\n",(i+1) );
+		
 	 	scanf("%i", &temporal);
+		if(temporal!=1&&temporal!=2&&temporal!=3){
+			printf("El tipo de usuario %i no existe, vuelva a correr el programa", temporal);
+			exit(0);
+		}
 	 	usuarios[i]=temporal;
 	}
 
@@ -309,26 +318,31 @@ void recopilarLogs(int *pid, int cantidad_computadores){
 }
 int main(int argc, char *argv[]){
 	
-	int *pid,cantidad_computadores,i, status, blogs, runtime, tipo, *tipos_blogs;
+	int *pid,cantidad_computadores,i, status, blogs, runtime, tipo, *tipos_blogs, cant_seciones;
 	Usuario u;
-	int cant_seciones;
+
 	Lista * lista;
 	if(argc!=4){
 		printf("cantidad de argumentos, no válida, debería ser  numeroDeComputadores, numeroBlogs, runtime\n");
 		exit(0);
 	}
+	
 	terminar = malloc (sizeof (int));
-	*terminar = 0;
-	
-	if(argc!=4){
-		printf("cantidad de argumentos, no válida, debería ser  numeroDeComputadores, numeroBlogs, runtime\n");
-		exit(0);
-	}
-
-	
+	*terminar = 0;	
 	cantidad_computadores = atoi(argv[1]);
 	num_blogs = atoi(argv[2]);
 	runtime = atoi(argv[3]);
+	for(i=1;i<4;i++){
+		if(atoi(argv[i])<=0){
+			printf("Ningún argumento debe ser negativo o letra\n");
+			exit(0);
+		}
+	}
+	if(cantidad_computadores>10){
+		printf("No pueden haber más de 10 computadores\n");
+		exit(0);
+	}
+
 	pid = malloc(sizeof(int) * cantidad_computadores);
 	tipos_blogs = malloc(sizeof(int) * cantidad_computadores);
 	cargarUsuarios(tipos_blogs, cantidad_computadores);
@@ -370,5 +384,6 @@ int main(int argc, char *argv[]){
 	recopilarLogs(pid,cantidad_computadores);
 	free(pid);	
 	free(tipos_blogs);
+	free(terminar);
 }
 	

@@ -1,0 +1,40 @@
+17:50:16 M0, 0, T1 Read blog 3
+17:50:17 M0, 0, T1 Read same  blog 3
+17:50:18 M0, 0, T1 Read same  blog 3
+17:50:19 M0, 0, T1 Read same  blog 3
+17:50:20 M0, 0, T1 Read same  blog 3
+17:50:21 M0, 0, T1 Read blog 3
+17:50:22 M0, 0, T1 Read same  blog 3
+17:50:23 M0, 0, T1 Read blog 3
+17:50:24 M0, 0, T1 Read blog 2
+17:50:24 M0, 0, T1 Read same  blog 3
+17:50:16 M1, 0, T2 Read blog 3
+17:50:17 M1, 0, T2 Read blog 3
+17:50:18 M1, 0, T2 Read blog 1
+17:50:18 M1, 0, T2 Read blog 3
+17:50:19 M1, 0, T2 Read blog 1
+17:50:19 M1, 0, T2 Read blog 3
+2015-5-26 17:50:20 M1, 0, T2, terminar 
+17:50:20 M1, 0, T2 Read blog 3
+2015-5-26 17:50:21 M1, 0, T2, terminar 
+17:50:20 M1, 0, T2 Read blog 1
+17:50:21 M1, 0, T2 Read blog 1
+17:50:22 M1, 0, T2 Read blog 3
+2015-5-26 17:50:23 M1, 0, T2, terminar 
+17:50:22 M1, 0, T2 Read blog 1
+17:50:23 M1, 0, T2 Read blog 1
+2015-5-26 17:50:24 M1, 0, T2, terminar 
+17:50:24 M1, 0, T2 Read blog 2
+17:50:16 M2, 0, T3 Read blog 3
+17:50:17 M2, 0, T3 Read same  blog 3
+17:50:18 M2, 0, T3 Comment in blog 3
+2015-5-26 17:50:19 M2, 0, T3, terminar 
+17:50:19 M2, 0, T3 Read blog 3
+17:50:20 M2, 0, T3 Read same  blog 3
+17:50:21 M2, 0, T3 Read same  blog 3
+17:50:22 M2, 0, T3 Read blog 0
+17:50:22 M2, 0, T3 Read blog 3
+17:50:23 M2, 0, T3 Read same  blog 0
+2015-5-26 17:50:24 M2, 0, T3, terminar 
+17:50:23 M2, 0, T3 Read same  blog 3
+17:50:24 M2, 0, T3 Comment in blog 3
