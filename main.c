@@ -140,7 +140,11 @@ void imprimirListaArchivo(Lista* lista){
 			//impresión de la hora
 			fprintf(f,"%d-%d-%d %d:%d:%d ", tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 			//idMaquina , numeroDeSesion, Tipo de Lector, operacion
-			fprintf(f, "%i %i %i %s %i\n", log.idMaquina, log.idSesion, log.tipoUsuario, log.accion, log.blog);
+			if (log.blog!=-1){
+				fprintf(f, "%i %i %i %s %i\n", log.idMaquina, log.idSesion, log.tipoUsuario, log.accion, log.blog);
+			}else{
+				fprintf(f, "%i %i %i %s %i\n", log.idMaquina, log.idSesion, log.tipoUsuario, log.accion, log.blog);
+			}
 			aux= aux->siguiente;
 		}
 	}
